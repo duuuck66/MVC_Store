@@ -12,7 +12,26 @@ namespace MVC_Store.Controllers
         // GET: Cart
         public ActionResult Index()
         {
-            return View();
+            //Declare CartVM list
+            var cart = Session["cart"] as List<CartVM> ?? new List<CartVM>();
+
+            //Check cart for null
+            if (cart.Count == 0 || Session["cart"] == null)
+            {
+                ViewBag.Message = "You cart is empty";
+                return View();
+            }
+
+            //Sum cart (if not null) and send to ViewBag
+            decimal total = 0m;
+            foreach (var item in cart)
+            {
+                total += item.Total;
+            }
+            ViewBag.GrandTotal = total;
+
+            //Return list
+            return View(cart);
         }
 
         public ActionResult CartPartial()
@@ -45,7 +64,7 @@ namespace MVC_Store.Controllers
                 model.Price = 0m;
             }
             //Return partial view
-            return PartialView();
+            return PartialView("_CartPartial",model);
         }
     }
 }
