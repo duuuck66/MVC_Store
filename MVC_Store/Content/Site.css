@@ -54,14 +54,25 @@ table.sorting tr:not(.home) {
     }
 
     25% {
-        border-left: 3px solid #ffe6e6;
+        border-left: 3px solid #FFF655;
     }
 
     50% {
-        border-left: 4px solid #d6d6d6;
+        border-left: 4px solid #24FD27;
     }
 
     100% {
-        border-left: 5px solid #737373;
+        border-left: 5px solid #FF1493;
     }
+}
+
+div.ajaxmsg {
+    background: green;
+    color: white;
+    padding: 10px;
+    display: none;
+}
+
+span.loader {
+    display: none;
 }

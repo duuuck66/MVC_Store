@@ -100,7 +100,7 @@ namespace MVC_Store.Controllers
             }
             //Get image from gallery
             model.GalleryImages = Directory
-                .EnumerateFiles(Server.MapPath("~/Images/Uploads/Products" + id + "/Gallery/Thumbs"))
+                .EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs"))
                 .Select(fn => Path.GetFileName(fn));
 
             //Return model
