@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.UI.WebControls;
 using MVC_Store.Models.Data;
 using MVC_Store.Models.ViewModels.Cart;
 
@@ -144,6 +145,49 @@ namespace MVC_Store.Controllers
 
                 //Return JSON response with data
                 return Json(result, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        //GET: /cart/DecrementProduct
+        public ActionResult DecrementProduct(int productId)
+        {
+            //Declare cart list
+            List<CartVM> cart = Session["cart"] as List<CartVM>;
+
+            using (Db db = new Db())
+            {
+                //Get CartVM model from list
+                CartVM model = cart.FirstOrDefault(x => x.ProductId == productId);
+
+                //Del qty
+                if (model.Quantity > 1)
+                    model.Quantity--;
+                else
+                {
+                    model.Quantity = 0;
+                    cart.Remove(model);
+                }
+
+                //Save all data
+                var result = new { qty = model.Quantity, price = model.Price };
+
+                //Return JSON response with data
+                return Json(result, JsonRequestBehavior.AllowGet);
+
+            }
+        }
+
+        public void RemoveProduct(int productId)
+        {
+            //Declare cart list
+            List<CartVM> cart = Session["cart"] as List<CartVM>;
+
+            using (Db db = new Db())
+            {
+                //Get CartVM model from list
+                CartVM model = cart.FirstOrDefault(x => x.ProductId == productId);
+
+                cart.Remove(model);
             }
         }
     }
