@@ -43,33 +43,38 @@ else
                 <td>
                     @Html.DisplayFor(modelItem => item.ProductName)
                 </td>
-                <td>
+                <td class="qty@(item.ProductId)">
                     @Html.DisplayFor(modelItem => item.Quantity)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Price)
+                    @Html.DisplayFor(modelItem => item.Price) RUB
                 </td>
                 <td>
-                    <img src="/Images/Uploads/Products/@item.ProductId/Thumbs/@item.Image"/>
+                    <img src="/Images/Uploads/Products/@item.ProductId/Thumbs/@item.Image" />
                 </td>
                 <td>
                     <a href="#" class="incproduct" data-id="@item.ProductId">+</a>
                     <a href="#" class="decproduct" data-id="@item.ProductId">-</a>
                     <a href="#" class="removeproduct" data-id="@item.ProductId">Remove</a>
                 </td>
-                <td>
+                <td class="total@(item.ProductId)">
                     @Html.DisplayFor(modelItem => item.Total) RUB
                 </td>
             </tr>
         }
-    <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td>@ViewBag.GrandTotal RUB</td>
-    </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="grandtotal"><b>Grand total:</b><span>@ViewBag.GrandTotal</span> RUB</td>
+        </tr>
     </table>
+}
+
+@section Scripts
+{
+    <script src="~/Content/ShopJS/IncrementProductScript.js"></script>
 }
