@@ -136,5 +136,110 @@ namespace MVC_Store.Controllers
             FormsAuthentication.SignOut();
             return RedirectToAction("Login");
         }
+
+        public ActionResult UserNavPartial()
+        {
+            //Get username
+            string userName = User.Identity.Name;
+
+            //Declare model
+            UserNavPartialVM model;
+
+            using (Db db = new Db())
+            {
+                //Get user
+                UserDTO dto = db.Users.FirstOrDefault(x => x.Username == userName);
+
+                //Fill model with data from context (DTO)
+                model = new UserNavPartialVM()
+                {
+                    FirstName = dto.FirstName,
+                    LastName = dto.LastName
+                };
+            }
+            //Return
+            return PartialView(model);
+        }
+
+        //GET: /account/UserProfile
+        [HttpGet]
+        [ActionName("user-profile")]
+        public ActionResult UserProfile()
+        {
+            //Get username
+            string userName = User.Identity.Name;
+
+            //Declare model
+            UserProfileVM model;
+
+            using (Db db = new Db())
+            {
+                //Get user
+                UserDTO dto = db.Users.FirstOrDefault(x => x.Username == userName);
+
+                //Initialize model with data
+                model = new UserProfileVM(dto);
+            }
+            //Return model to view
+            return View("UserProfile", model);
+        }
+
+        //POST: /account/UserProfile
+        [HttpPost]
+        [ActionName("user-profile")]
+        public ActionResult UserProfile(UserProfileVM model)
+        {
+            //Check model for valid
+            if (!ModelState.IsValid)
+            {
+                return View("UserProfile", model);
+            }
+
+            //Check password (if user changing)
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                if (!model.Password.Equals(model.ConfirmPassword))
+                {
+                    ModelState.AddModelError("", "Passwords do not match");
+                    return View("UserProfile", model);
+                }
+            }
+
+            using (Db db = new Db())
+            {
+                //Get username
+                string userName = User.Identity.Name;
+
+                //Check username for unique
+                if (db.Users.Where(x => x.Id != model.Id).Any(x => x.Username == userName))
+                {
+                    ModelState.AddModelError("", $"Username already exists");
+                    model.Username = "";
+                    return View("UserProfile", model);
+                }
+
+                //Change model
+                UserDTO dto = db.Users.Find(model.Id);
+
+                dto.FirstName = model.FirstName;
+                dto.LastName = model.LastName;
+                dto.EmailAddress = model.EmailAddress;
+                dto.Username = model.Username;
+
+                if (!string.IsNullOrWhiteSpace(model.Password))
+                {
+                    dto.Password = model.Password;
+                }
+
+                //Save changes
+                db.SaveChanges();
+            }
+
+            //Set message to TempData
+            TempData["SM"] = "You have successfully edited your profile";
+
+            //Return view with model
+            return View("UserProfile", model);
+        }
     }
 }
