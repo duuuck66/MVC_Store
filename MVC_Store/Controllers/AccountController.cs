@@ -4,8 +4,11 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
+using System.Xml.Schema;
 using MVC_Store.Models.Data;
 using MVC_Store.Models.ViewModels.Account;
+using MVC_Store.Models.ViewModels.Shop;
+using Newtonsoft.Json.Serialization;
 
 namespace MVC_Store.Controllers
 {
@@ -251,6 +254,67 @@ namespace MVC_Store.Controllers
                 return View("UserProfile", model);
             else
                 return RedirectToAction("Logout");
+        }
+
+        //GET: /account/Orders
+        public ActionResult Orders()
+        {
+            //Initialize model OrdersForUserVM
+            List<OrdersForUserVM> ordersForUser = new List<OrdersForUserVM>();
+
+            using (Db db = new Db())
+            {
+                //Get user ID
+                UserDTO user = db.Users.FirstOrDefault(x => x.Username == User.Identity.Name);
+                int userId = user.Id;
+
+                //Initialize OrderVM
+                List<OrderVM> orders = db.Orders.Where(x => x.UserId == userId).ToArray().Select(x => new OrderVM(x))
+                    .ToList();
+
+                //Sort products list in OrderVM
+                foreach (var order in orders)
+                {
+                    //Initialize products dictionary
+                    Dictionary<string, int> productsAndQty = new Dictionary<string, int>();
+
+                    //Declare sum
+                    decimal total = 0m;
+
+                    //Initialize OrderDetailsDTO
+                    List<OrderDetailsDTO> orderDetailsDto =
+                        db.OrderDetails.Where(x => x.OrderId == order.OrderId).ToList();
+
+                    //Sort OrderDetailsDTO
+                    foreach (var orderDetails in orderDetailsDto)
+                    {
+                        //Get product
+                        ProductDTO product = db.Products.FirstOrDefault(x => x.Id == orderDetails.ProductId);
+
+                        //Get price
+                        decimal price = product.Price;
+
+                        //Get name
+                        string productName = product.Name;
+
+                        //Add product to dictionary
+                        productsAndQty.Add(productName, orderDetails.Quantity);
+
+                        //Get total price
+                        total += orderDetails.Quantity * price;
+                    }
+                    //Add data to model OrdersForUserVM
+                    ordersForUser.Add(new OrdersForUserVM()
+                    {
+                        OrderNumber = order.OrderId,
+                        Total = total,
+                        ProductsAndQty = productsAndQty,
+                        CreatedAt = order.CreatedAt
+                    });
+                }
+            }
+            //Return view with model OrdersForUserVM
+            return View(ordersForUser);
         }
     }
 }
