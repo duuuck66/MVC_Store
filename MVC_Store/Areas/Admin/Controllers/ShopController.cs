@@ -8,6 +8,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
+using MVC_Store.Areas.Admin.Models.ViewModels.Shop;
 
 namespace MVC_Store.Areas.Admin.Controllers
 {
@@ -538,6 +539,67 @@ namespace MVC_Store.Areas.Admin.Controllers
 
             if (System.IO.File.Exists(fullPath2))
                 System.IO.File.Delete(fullPath2);
+        }
+
+        // GET: Admin/Shop/Orders
+        public ActionResult Orders()
+        {
+            //Initialize OrdersForAdminVM
+            List<OrdersForAdminVM> ordersForAdmin = new List<OrdersForAdminVM>();
+
+            using (Db db = new Db())
+            {
+                //Initialize OrderVM
+                List<OrderVM> orders = db.Orders.ToArray().Select(x => new OrderVM(x)).ToList();
+
+                //Sort all products list and fill OrderVM
+                foreach (var order in orders)
+                {
+                    //Initialize products dictionary
+                    Dictionary<string, int> productAndQty = new Dictionary<string, int>();
+
+                    //Add variable for sum
+                    decimal total = 0m;
+
+                    //Initialize OrderDetailsDTO
+                    List<OrderDetailsDTO> orderDetailsList =
+                        db.OrderDetails.Where(x => x.OrderId == order.OrderId).ToList();
+
+                    //Get username
+                    UserDTO user = db.Users.FirstOrDefault(x => x.Id == order.UserId);
+                    string username = user.Username;
+
+                    //Sort all products to this user
+                    foreach (var orderDetails in orderDetailsList)
+                    {
+                        //Get product
+                        ProductDTO product = db.Products.FirstOrDefault(x => x.Id == orderDetails.ProductId);
+
+                        //Get price for product
+                        decimal price = product.Price;
+
+                        //Get product name
+                        string productName = product.Name;
+
+                        //Add product to dictionary
+                        productAndQty.Add(productName, orderDetails.Quantity);
+
+                        //Get all sum
+                        total += orderDetails.Quantity * price;
+                    }
+                    //Add data to OrdersForAdminVM
+                    ordersForAdmin.Add(new OrdersForAdminVM()
+                    {
+                        OrderNumber = order.OrderId,
+                        UserName = username,
+                        Total = total,
+                        ProductsAndQty = productAndQty,
+                        CreatedAt = order.CreatedAt
+                    });
+                }
+            }
+            //Return
+            return View(ordersForAdmin);
         }
     }
 }

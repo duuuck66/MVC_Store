@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
@@ -189,6 +191,74 @@ namespace MVC_Store.Controllers
 
                 cart.Remove(model);
             }
+        }
+
+        public ActionResult PaypalPartial()
+        {
+            //Get product list from cart
+            List<CartVM> cart = Session["cart"] as List<CartVM>;
+
+            //Return partial view
+            return PartialView(cart);
+        }
+
+        //POST: /cart/PlaceOrder
+        [HttpPost]
+        public void PlaceOrder()
+        {
+            //Get product list
+            List<CartVM> cart = Session["cart"] as List<CartVM>;
+
+            //Get username
+            string userName = User.Identity.Name;
+
+            //Declare variable for orderId
+            int orderId = 0;
+
+            using (Db db = new Db())
+            {
+                //Declare model OrderDTO
+                OrderDTO orderDto = new OrderDTO();
+
+                //Get user ID
+                var q = db.Users.FirstOrDefault(x => x.Username == userName);
+                int userId = q.Id;
+
+                //Fill OrderDTO with data and save
+                orderDto.UserId = userId;
+                orderDto.CreatedAt = DateTime.Now;
+
+                db.Orders.Add(orderDto);
+                db.SaveChanges();
+
+                //Get orderID
+                orderId = orderDto.OrderId;
+
+                //Declare model OrderDetails DTO
+                OrderDetailsDTO orderDetailsDto = new OrderDetailsDTO();
+
+                //Add data
+                foreach (var item in cart)
+                {
+                    orderDetailsDto.OrderId = orderId;
+                    orderDetailsDto.UserId = userId;
+                    orderDetailsDto.ProductId = item.ProductId;
+                    orderDetailsDto.Quantity = item.Quantity;
+
+                    db.OrderDetails.Add(orderDetailsDto);
+                    db.SaveChanges();
+                }
+            }
+            //Send msg to admin mail
+            var client = new SmtpClient("smtp.mailtrap.io", 2525)
+            {
+                Credentials = new NetworkCredential("9313168b2b5e76", "1c60241c2a52ed"),
+                EnableSsl = true
+            };
+            client.Send("shop@duck.com", "admin@duck.com", "New Order", $"You have a new order. Order number:  {orderId}");
+
+            //Reload session
+            Session["cart"] = null;
         }
     }
 }

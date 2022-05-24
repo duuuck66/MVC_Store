@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Web.Razor.Tokenizer.Symbols
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -33,15 +34,33 @@
                     <li>@Html.ActionLink("Login", "Login", "Account", null, new { @class = "navbar-text", style = "text-decoration: none" })</li>
                 }
             }
-            @if (Request.IsAuthenticated)
+            @if (Request.IsAuthenticated && User.IsInRole("User"))
             {
-                <li>@Html.Action("UserNavPartial", "Account", new{area=""})</li>
+                if (ViewBag.Title == "User Profile")
+                {
+                    <li class="active">@Html.Action("UserNavPartial", "Account", new { area = "" })</li>
+                }
+                else
+                {
+                    <li>@Html.Action("UserNavPartial", "Account", new { area = "" })</li>
+                }
             }
-
         </ul>
-        <span class="navbar-text">
-            @Html.Action("CartPartial", "Cart")
-        </span>
+        @if (Request.IsAuthenticated && User.IsInRole("Admin"))
+        {
+            <span class="navbar-text">
+                @Html.ActionLink("Admin Area", "Index", "Dashboard", new { area="Admin"}, null)
+            </span>
+        }
+        else
+        {
+            if (ViewBag.Title != "Cart Details")
+            {
+                <span class="navbar-text">
+                    @Html.Action("CartPartial", "Cart")
+                </span>
+            }
+        }
     </div>
 </nav>
     <div class="container body-content" style="margin-top: 40px;">
