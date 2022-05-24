@@ -12,6 +12,7 @@ using MVC_Store.Areas.Admin.Models.ViewModels.Shop;
 
 namespace MVC_Store.Areas.Admin.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ShopController : Controller
     {
         // GET: Admin/Shop

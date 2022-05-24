@@ -134,12 +134,14 @@ namespace MVC_Store.Controllers
         }
 
         //GET: /account/logout
+        [Authorize]
         public ActionResult Logout()
         {
             FormsAuthentication.SignOut();
             return RedirectToAction("Login");
         }
 
+        [Authorize]
         public ActionResult UserNavPartial()
         {
             //Get username
@@ -167,6 +169,7 @@ namespace MVC_Store.Controllers
         //GET: /account/UserProfile
         [HttpGet]
         [ActionName("user-profile")]
+        [Authorize]
         public ActionResult UserProfile()
         {
             //Get username
@@ -190,6 +193,7 @@ namespace MVC_Store.Controllers
         //POST: /account/UserProfile
         [HttpPost]
         [ActionName("user-profile")]
+        [Authorize]
         public ActionResult UserProfile(UserProfileVM model)
         {
             bool userNameIsChanged = false;
@@ -257,6 +261,7 @@ namespace MVC_Store.Controllers
         }
 
         //GET: /account/Orders
+        [Authorize(Roles = "User")]
         public ActionResult Orders()
         {
             //Initialize model OrdersForUserVM
